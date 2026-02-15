@@ -35,3 +35,11 @@ logs/
 .DS_Store
 Thumbs.db
 
+# Testing
+.coverage
+.coverage.*
+htmlcov/
+.pytest_cache/
+.tox/
+*.cover
+
