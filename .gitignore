@@ -43,3 +43,6 @@ htmlcov/
 .tox/
 *.cover
 
+# Debug files
+debug_*.py
+
