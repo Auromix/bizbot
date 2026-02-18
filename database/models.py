@@ -26,14 +26,12 @@ Base.__allow_unmapped__ = True
 class Employee(Base):
     """员工表模型。
     
-    存储员工的基本信息，包括姓名、微信信息、角色、提成率等。
+    存储员工的基本信息，包括姓名、昵称、角色、提成率等。
     支持通过extra_data字段扩展存储部门、技能等级等自定义属性。
     
     Attributes:
         id: 主键，自增整数。
         name: 员工姓名，必填，最大长度50字符。
-        wechat_nickname: 微信昵称，可选，最大长度100字符。
-        wechat_alias: 微信别名，可选，最大长度100字符。
         role: 员工角色，可选值：staff（普通员工）/ manager（管理员）/ bot（机器人），默认staff。
         commission_rate: 提成率，DECIMAL(5,2)，范围0-100，默认0。
         is_active: 是否激活，布尔值，默认True。
@@ -49,8 +47,6 @@ class Employee(Base):
     
     id: int = Column(Integer, primary_key=True, autoincrement=True)
     name: str = Column(String(50), nullable=False)
-    wechat_nickname: Optional[str] = Column(String(100))
-    wechat_alias: Optional[str] = Column(String(100))
     role: str = Column(String(20), default="staff")  # staff / manager / bot
     commission_rate: float = Column(DECIMAL(5, 2), default=0)
     is_active: bool = Column(Boolean, default=True)
@@ -403,14 +399,13 @@ class InventoryLog(Base):
 class RawMessage(Base):
     """原始消息存档表模型。
     
-    存储从微信群聊中接收到的原始消息，用于追溯和审计。
+    存储接收到的原始消息，用于追溯和审计。
     记录消息的解析状态和结果，支持消息去重。
     
     Attributes:
         id: 主键，自增整数。
-        wechat_msg_id: 微信消息ID，唯一，最大长度100字符。
+        msg_id: 消息ID，唯一，最大长度100字符（用于去重）。
         sender_nickname: 发送者昵称，必填，最大长度100字符。
-        sender_wechat_id: 发送者微信ID，可选，最大长度100字符。
         content: 消息内容，必填，文本类型。
         msg_type: 消息类型，可选，默认"text"，最大长度20字符。
         group_id: 群组ID，可选，最大长度100字符。
@@ -430,9 +425,8 @@ class RawMessage(Base):
     __tablename__ = "raw_messages"
     
     id: int = Column(Integer, primary_key=True, autoincrement=True)
-    wechat_msg_id: Optional[str] = Column(String(100), unique=True)
+    msg_id: Optional[str] = Column(String(100), unique=True)
     sender_nickname: str = Column(String(100), nullable=False)
-    sender_wechat_id: Optional[str] = Column(String(100))
     content: str = Column(Text, nullable=False)
     msg_type: str = Column(String(20), default="text")
     group_id: Optional[str] = Column(String(100))

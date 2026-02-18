@@ -1,57 +1,39 @@
-"""全局配置管理"""
+"""全局配置管理
+
+所有用户可配置项均通过 .env 文件设置，运行时自动加载到此处。
+默认使用 MiniMax 作为 LLM 提供商。
+
+使用方式：
+    1. 运行 python scripts/setup_env.py 生成 .env 文件
+    2. 或手动创建 .env 文件（参考 .env.example）
+"""
 from pydantic_settings import BaseSettings
-from typing import Optional
-import os
 
 
 class Settings(BaseSettings):
-    """应用配置"""
-    
-    # LLM API Keys
-    openai_api_key: Optional[str] = None
-    anthropic_api_key: Optional[str] = None
-    
-    # Database
+    """应用配置 - 所有字段均可通过 .env 或环境变量覆盖"""
+
+    # ========== MiniMax LLM 配置（默认） ==========
+    minimax_api_key: str = ""
+    minimax_model: str = "MiniMax-M2.5"
+    minimax_base_url: str = "https://api.minimaxi.com/anthropic"
+
+    # ========== 数据库 ==========
     database_url: str = "sqlite:///data/store.db"
-    
-    # Redis
-    redis_url: Optional[str] = "redis://localhost:6379/0"
-    
-    # Bot Configuration
-    bot_name: str = "小助手"
-    target_group_name: str = "门店经营群"
-    primary_llm: str = "openai"  # openai / anthropic
-    fallback_llm: Optional[str] = "anthropic"
-    
-    # LLM Model Settings
-    openai_model: str = "gpt-4o-mini"
-    anthropic_model: str = "claude-sonnet-4-20250514"
-    
-    # Processing Settings
-    confidence_threshold: float = 0.7
-    daily_summary_time: str = "21:00"
-    
-    # WeChat Configuration
-    wechat_group_ids: Optional[str] = None  # 逗号分隔的群ID列表
-    
-    # WeChat Work (企业微信) Configuration
-    wechat_work_corp_id: Optional[str] = None  # 企业 ID
-    wechat_work_secret: Optional[str] = None  # 应用密钥
-    wechat_work_agent_id: Optional[str] = None  # 应用 ID
-    wechat_work_token: Optional[str] = None  # 回调 Token
-    wechat_work_encoding_aes_key: Optional[str] = None  # 回调消息加密密钥
-    
-    # HTTP API Configuration
-    wechat_http_host: str = "0.0.0.0"  # HTTP API 监听地址
-    wechat_http_port: int = 8000  # HTTP API 监听端口
-    wechat_callback_path: str = "/callback"  # 回调路径
-    
+
+    # ========== Web 平台配置 ==========
+    web_host: str = "0.0.0.0"
+    web_port: int = 8080
+    web_username: str = "admin"
+    web_password: str = "admin123"
+    web_secret_key: str = "change-me-to-a-random-secret-key"
+
     class Config:
         env_file = ".env"
         env_file_encoding = "utf-8"
         case_sensitive = False
+        extra = "ignore"
 
 
 # 全局配置实例
 settings = Settings()
-

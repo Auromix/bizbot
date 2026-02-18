@@ -65,7 +65,7 @@ def run_daily_business(db: DatabaseManager) -> None:
     # 1.1 保存原始消息
     msg1 = db.save_raw_message(
         {
-            "wechat_msg_id": "hair-service-001",
+            "msg_id": "hair-service-001",
             "sender_nickname": "Mia",
             "content": "Alice haircut 80",
             "timestamp": datetime(2024, 1, 28, 10, 0, 0),
@@ -102,7 +102,7 @@ def run_daily_business(db: DatabaseManager) -> None:
     # 2.1 保存原始消息
     msg2 = db.save_raw_message(
         {
-            "wechat_msg_id": "hair-membership-001",
+            "msg_id": "hair-membership-001",
             "sender_nickname": "Tony",
             "content": "Alice top-up 1000",
             "timestamp": datetime(2024, 1, 28, 12, 0, 0),
@@ -130,7 +130,7 @@ def run_daily_business(db: DatabaseManager) -> None:
     # 3.1 保存原始消息
     msg3 = db.save_raw_message(
         {
-            "wechat_msg_id": "hair-sale-001",
+            "msg_id": "hair-sale-001",
             "sender_nickname": "Tony",
             "content": "Alice shampoo 50",
             "timestamp": datetime(2024, 1, 28, 16, 0, 0),

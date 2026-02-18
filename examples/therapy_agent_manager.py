@@ -124,7 +124,7 @@ def record_service_income(
 
         msg_id = db.save_raw_message(
             {
-                "wechat_msg_id": f"therapy_svc_{datetime.now().timestamp()}",
+                "msg_id": f"therapy_svc_{datetime.now().timestamp()}",
                 "sender_nickname": "理疗馆管理员",
                 "content": f"{customer_name} {service_type} {amount}元",
                 "timestamp": datetime.now(),
@@ -189,7 +189,7 @@ def open_membership_card(
 
         msg_id = db.save_raw_message(
             {
-                "wechat_msg_id": f"therapy_mem_{datetime.now().timestamp()}",
+                "msg_id": f"therapy_mem_{datetime.now().timestamp()}",
                 "sender_nickname": "理疗馆管理员",
                 "content": f"{customer_name}开{card_type}{amount}元",
                 "timestamp": datetime.now(),
@@ -257,7 +257,7 @@ def record_product_sale(
 
         msg_id = db.save_raw_message(
             {
-                "wechat_msg_id": f"therapy_prod_{datetime.now().timestamp()}",
+                "msg_id": f"therapy_prod_{datetime.now().timestamp()}",
                 "sender_nickname": "理疗馆管理员",
                 "content": f"{customer_name or '顾客'}购买{product_name}{amount}元",
                 "timestamp": datetime.now(),

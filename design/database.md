@@ -236,8 +236,6 @@ erDiagram
     employees {
         int id PK
         string name
-        string wechat_nickname
-        string wechat_alias
         string role "staff/manager/bot"
         decimal commission_rate
         bool is_active
@@ -351,9 +349,8 @@ erDiagram
 
     raw_messages {
         int id PK
-        string wechat_msg_id UK
+        string msg_id UK
         string sender_nickname
-        string sender_wechat_id
         text content
         string msg_type
         string group_id
@@ -564,7 +561,7 @@ graph TB
 
 ```mermaid
 sequenceDiagram
-    participant WC as 微信群聊
+    participant WC as 群聊消息
     participant PP as Pipeline
     participant DM as DatabaseManager
     participant MR as MessageRepo
@@ -705,7 +702,7 @@ db.plugins.delete("gym", "customer", customer_id, "body_fat")
 
 **理由**：
 - 简化上层代码，无需先查 ID 再保存
-- 适配微信群聊场景：LLM 解析出的是名称字符串而非 ID
+- 适配群聊场景：LLM 解析出的是名称字符串而非 ID
 - 幂等操作（`get_or_create`），重复创建安全
 
 ### Q4: 为什么 database 模块不包含 Agent 工具注册？

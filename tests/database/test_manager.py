@@ -52,7 +52,7 @@ class TestManagerSaveRawMessage:
 
     def test_save_and_dedup(self, temp_db):
         payload = {
-            "wechat_msg_id": "dm-msg-1",
+            "msg_id": "dm-msg-1",
             "sender_nickname": "user",
             "content": "hello",
             "timestamp": datetime(2024, 1, 28, 10, 0, 0),
@@ -223,7 +223,7 @@ class TestManagerGetStaffList:
         temp_db.staff.get_or_create("FmtStaff")
         staff_list = temp_db.get_staff_list()
         s = staff_list[0]
-        expected_keys = {"id", "name", "wechat_nickname", "role", "commission_rate", "is_active"}
+        expected_keys = {"id", "name", "role", "commission_rate", "is_active"}
         assert expected_keys.issubset(set(s.keys()))
 
 

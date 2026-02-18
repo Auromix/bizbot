@@ -58,7 +58,7 @@ def demo_service_record(db: DatabaseManager):
     print("-" * 60)
 
     msg_id = db.save_raw_message({
-        "wechat_msg_id": "service-001",
+        "msg_id": "service-001",
         "sender_nickname": "前台",
         "content": "张三 头疗 198元",
         "timestamp": datetime.now(),
@@ -84,7 +84,7 @@ def demo_service_record(db: DatabaseManager):
     print("-" * 60)
 
     msg_id2 = db.save_raw_message({
-        "wechat_msg_id": "service-002",
+        "msg_id": "service-002",
         "sender_nickname": "前台",
         "content": "李四 按摩 158元 提成20给技师A",
         "timestamp": datetime.now(),
@@ -148,7 +148,7 @@ def demo_product_sale(db: DatabaseManager):
     print("-" * 60)
 
     msg_id = db.save_raw_message({
-        "wechat_msg_id": "sale-001",
+        "msg_id": "sale-001",
         "sender_nickname": "前台",
         "content": "张三 购买 洗发水 2瓶 100元",
         "timestamp": datetime.now(),
@@ -200,7 +200,7 @@ def demo_membership(db: DatabaseManager):
     print("-" * 60)
 
     msg_id = db.save_raw_message({
-        "wechat_msg_id": "membership-001",
+        "msg_id": "membership-001",
         "sender_nickname": "前台",
         "content": "王五 开卡 储值卡 1000元",
         "timestamp": datetime.now(),
@@ -253,7 +253,7 @@ def demo_membership(db: DatabaseManager):
     print("-" * 60)
 
     msg_id2 = db.save_raw_message({
-        "wechat_msg_id": "membership-002",
+        "msg_id": "membership-002",
         "sender_nickname": "前台",
         "content": "赵六 开卡 次卡 10次",
         "timestamp": datetime.now(),

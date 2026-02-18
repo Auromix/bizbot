@@ -1,57 +1,58 @@
-"""用户接口模块 - 完整版
+"""用户接口模块 - 统一的消息通道管理
 
-提供企业微信接口，使用企业微信 API 实现完整功能。
+提供多种用户交互通道，支持通过不同渠道与 Agent 对话：
+
+通道类型：
+- TerminalChannel: 终端命令行交互（开发调试用）
+- WebChannel: Web 管理平台（聊天 + 数据库可视化）
+
+核心组件：
+- Channel: 通道抽象基类
+- ChannelManager: 通道管理器（统一管理多个通道）
+- Message / Reply: 统一消息格式
 
 架构设计：
-- base.py: 定义统一的接口抽象基类 Interface
-- manager.py: 接口管理器，统一管理多个接口
-- wechat/: 企业微信接口实现（完整的机器人功能）
-  - bot.py: 机器人主类
-  - wecom_client.py: 企业微信 API 客户端
-  - callback_server.py: 消息回调服务器
-  - manager.py: 群聊和用户管理器
-  - message_router.py: 消息路由器
-- web/: Web接口（可选，提供 RESTful API 用于数据库管理）
+    用户 ──→ 通道 ──→ Message ──→ Agent ──→ Reply ──→ 通道 ──→ 用户
+    (Web/终端)                   (处理逻辑)              (回复消息)
 
-功能特性：
-- 消息收发（文本、图片、文件、Markdown）
-- 群聊管理（创建、修改、查询）
-- 用户管理（查询用户信息、部门成员）
-- 消息回调（接收和处理企业微信消息）
-- 批量操作和缓存管理
+使用示例：
+    ```python
+    from interface import ChannelManager, WebChannel
 
-注意：所有业务相关的命令定义和处理逻辑都在 business/ 中
+    async def agent_handler(message):
+        response = await agent.chat(message.content)
+        return Reply(type=MessageType.TEXT, content=response["content"])
+
+    manager = ChannelManager(message_handler=agent_handler)
+    manager.register(WebChannel(port=8080))
+    await manager.start_all()
+    ```
 """
-from interface.base import Interface
-from interface.manager import InterfaceManager
+from interface.base import Channel, Message, MessageHandler, MessageType, Reply
+from interface.manager import ChannelManager
 
-# 导入企业微信接口
-from interface.wechat.bot import WeChatBot
-from interface.wechat.wecom_client import WeChatWorkClient
-from interface.wechat.callback_server import WeChatCallbackServer
-from interface.wechat.manager import WeChatGroupManager, WeChatUserManager
-from interface.wechat.message_router import WeChatMessageRouter
+# 终端通道
+from interface.terminal.channel import TerminalChannel
 
-# Web接口（可选）
+# Web 通道
 try:
-    from interface.web.api import WebAPI
+    from interface.web.channel import WebChannel
     _has_web = True
 except ImportError:
     _has_web = False
-    WebAPI = None
+    WebChannel = None
 
 __all__ = [
-    'Interface',
-    'InterfaceManager',
-    # 企业微信接口
-    'WeChatBot',
-    'WeChatWorkClient',
-    'WeChatCallbackServer',
-    'WeChatGroupManager',
-    'WeChatUserManager',
-    'WeChatMessageRouter',
+    # 核心
+    "Channel",
+    "ChannelManager",
+    "Message",
+    "MessageType",
+    "Reply",
+    "MessageHandler",
+    # 通道
+    "TerminalChannel",
 ]
 
-# 如果有 Web 接口，添加到导出列表
 if _has_web:
-    __all__.append('WebAPI')
+    __all__.append("WebChannel")

@@ -64,7 +64,7 @@ def create_membership_and_records(db: DatabaseManager) -> None:
     # 1.1 保存原始消息
     member_msg = db.save_raw_message(
         {
-            "wechat_msg_id": "gym-member-001",
+            "msg_id": "gym-member-001",
             "sender_nickname": "Front Desk",
             "content": "Bob annual membership 3000",
             "timestamp": datetime(2024, 1, 1, 10, 0, 0),
@@ -95,7 +95,7 @@ def create_membership_and_records(db: DatabaseManager) -> None:
     # 2.2 保存原始消息
     service_msg = db.save_raw_message(
         {
-            "wechat_msg_id": "gym-service-001",
+            "msg_id": "gym-service-001",
             "sender_nickname": "Front Desk",
             "content": "Bob personal training 300",
             "timestamp": datetime(2024, 1, 28, 14, 0, 0),
@@ -128,7 +128,7 @@ def create_membership_and_records(db: DatabaseManager) -> None:
     # 3.1 保存原始消息
     sale_msg = db.save_raw_message(
         {
-            "wechat_msg_id": "gym-sale-001",
+            "msg_id": "gym-sale-001",
             "sender_nickname": "Front Desk",
             "content": "Bob protein powder 200",
             "timestamp": datetime(2024, 1, 28, 16, 0, 0),

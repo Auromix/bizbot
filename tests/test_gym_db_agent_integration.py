@@ -105,7 +105,7 @@ def record_service_income(
             commission = amount * 0.4
 
         msg_id = db.save_raw_message({
-            "wechat_msg_id": f"gym_svc_{datetime.now().timestamp()}",
+            "msg_id": f"gym_svc_{datetime.now().timestamp()}",
             "sender_nickname": "健身房管理员",
             "content": f"{customer_name} {service_type} {amount}元",
             "timestamp": datetime.now(),
@@ -165,7 +165,7 @@ def open_membership_card(
         days = days_map.get(card_type, 30)
 
         msg_id = db.save_raw_message({
-            "wechat_msg_id": f"gym_mem_{datetime.now().timestamp()}",
+            "msg_id": f"gym_mem_{datetime.now().timestamp()}",
             "sender_nickname": "健身房管理员",
             "content": f"{customer_name}开{card_type}{amount}元",
             "timestamp": datetime.now(),
@@ -228,7 +228,7 @@ def record_product_sale(
         )
 
         msg_id = db.save_raw_message({
-            "wechat_msg_id": f"gym_prod_{datetime.now().timestamp()}",
+            "msg_id": f"gym_prod_{datetime.now().timestamp()}",
             "sender_nickname": "健身房管理员",
             "content": f"{customer_name or '顾客'}购买{product_name}{amount}元",
             "timestamp": datetime.now(),

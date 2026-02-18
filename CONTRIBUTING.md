@@ -31,8 +31,8 @@
 3. **开发环境设置**
    ```bash
    # 创建虚拟环境
-   conda create -n wechat-business-manager python=3.11 -y
-   conda activate wechat-business-manager
+   conda create -n we-business-manager python=3.11 -y
+   conda activate we-business-manager
    
    # 安装依赖
    pip install -r requirements.txt

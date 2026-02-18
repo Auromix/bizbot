@@ -1,92 +1,170 @@
-"""测试接口抽象基类"""
+"""测试通道抽象基类"""
 import pytest
+from datetime import datetime
 from typing import Any, Dict, Optional
-from unittest.mock import Mock
 
-from interface.base import Interface
+from interface.base import Channel, Message, MessageHandler, MessageType, Reply
 
 
-class ConcreteInterface(Interface):
-    """具体接口实现用于测试"""
-    
-    def __init__(self, name: str):
-        super().__init__(name)
-        self.start_called = False
-        self.stop_called = False
-        self.handle_message_called = False
-        self.send_message_called = False
-    
-    def start(self):
-        """启动接口"""
-        self.start_called = True
+class ConcreteChannel(Channel):
+    """具体通道实现用于测试"""
+
+    def __init__(self, name: str, message_handler=None):
+        super().__init__(name, message_handler)
+        self.startup_called = False
+        self.shutdown_called = False
+        self.sent_messages = []
+
+    async def startup(self):
+        self.startup_called = True
         self.running = True
-    
-    def stop(self):
-        """停止接口"""
-        self.stop_called = True
+
+    async def shutdown(self):
+        self.shutdown_called = True
         self.running = False
-    
-    async def handle_message(self, raw_msg: Dict[str, Any]) -> Optional[str]:
-        """处理接收到的消息"""
-        self.handle_message_called = True
-        return "test response"
-    
-    def send_message(self, target: str, content: str):
-        """发送消息"""
-        self.send_message_called = True
+
+    async def send(self, session_id: str, reply: Reply):
+        self.sent_messages.append((session_id, reply))
 
 
-class TestInterface:
-    """接口抽象基类测试"""
-    
+class TestMessageType:
+    """消息类型测试"""
+
+    def test_message_types(self):
+        assert MessageType.TEXT.value == "text"
+        assert MessageType.IMAGE.value == "image"
+        assert MessageType.FILE.value == "file"
+
+
+class TestMessage:
+    """消息数据类测试"""
+
+    def test_create_message(self):
+        msg = Message(
+            type=MessageType.TEXT,
+            content="你好",
+            sender_id="user1",
+            sender_name="张三",
+            session_id="session1",
+        )
+        assert msg.type == MessageType.TEXT
+        assert msg.content == "你好"
+        assert msg.sender_id == "user1"
+        assert msg.sender_name == "张三"
+        assert msg.session_id == "session1"
+        assert msg.channel_name == ""
+        assert isinstance(msg.timestamp, datetime)
+        assert msg.extra == {}
+
+    def test_message_with_extra(self):
+        msg = Message(
+            type=MessageType.TEXT,
+            content="测试消息",
+            sender_id="user1",
+            sender_name="张三",
+            session_id="session1",
+            extra={"msg_id": "12345", "is_group": True},
+        )
+        assert msg.extra["msg_id"] == "12345"
+        assert msg.extra["is_group"] is True
+
+
+class TestReply:
+    """回复数据类测试"""
+
+    def test_create_reply(self):
+        reply = Reply(type=MessageType.TEXT, content="收到")
+        assert reply.type == MessageType.TEXT
+        assert reply.content == "收到"
+
+
+class TestChannel:
+    """通道抽象基类测试"""
+
     def test_init(self):
-        """测试初始化"""
-        interface = ConcreteInterface("test")
-        assert interface.name == "test"
-        assert not interface.running
-    
-    def test_get_name(self):
-        """测试获取接口名称"""
-        interface = ConcreteInterface("test_interface")
-        assert interface.get_name() == "test_interface"
-    
-    def test_is_running(self):
-        """测试检查运行状态"""
-        interface = ConcreteInterface("test")
-        assert not interface.is_running()
-        
-        interface.running = True
-        assert interface.is_running()
-    
-    def test_start(self):
-        """测试启动接口"""
-        interface = ConcreteInterface("test")
-        interface.start()
-        assert interface.start_called
-        assert interface.is_running()
-    
-    def test_stop(self):
-        """测试停止接口"""
-        interface = ConcreteInterface("test")
-        interface.running = True
-        interface.stop()
-        assert interface.stop_called
-        assert not interface.is_running()
-    
-    @pytest.mark.asyncio
-    async def test_handle_message(self):
-        """测试处理消息"""
-        interface = ConcreteInterface("test")
-        raw_msg = {"content": "test message"}
-        response = await interface.handle_message(raw_msg)
-        
-        assert interface.handle_message_called
-        assert response == "test response"
-    
-    def test_send_message(self):
-        """测试发送消息"""
-        interface = ConcreteInterface("test")
-        interface.send_message("target", "content")
-        
-        assert interface.send_message_called
+        channel = ConcreteChannel("test")
+        assert channel.name == "test"
+        assert not channel.running
 
+    def test_is_running(self):
+        channel = ConcreteChannel("test")
+        assert not channel.is_running
+
+        channel.running = True
+        assert channel.is_running
+
+    @pytest.mark.asyncio
+    async def test_startup(self):
+        channel = ConcreteChannel("test")
+        await channel.startup()
+        assert channel.startup_called
+        assert channel.is_running
+
+    @pytest.mark.asyncio
+    async def test_shutdown(self):
+        channel = ConcreteChannel("test")
+        channel.running = True
+        await channel.shutdown()
+        assert channel.shutdown_called
+        assert not channel.is_running
+
+    @pytest.mark.asyncio
+    async def test_send(self):
+        channel = ConcreteChannel("test")
+        reply = Reply(type=MessageType.TEXT, content="回复内容")
+        await channel.send("session1", reply)
+        assert len(channel.sent_messages) == 1
+        assert channel.sent_messages[0][0] == "session1"
+        assert channel.sent_messages[0][1].content == "回复内容"
+
+    @pytest.mark.asyncio
+    async def test_handle_without_handler(self):
+        channel = ConcreteChannel("test")
+        msg = Message(
+            type=MessageType.TEXT,
+            content="测试",
+            sender_id="user1",
+            sender_name="张三",
+            session_id="session1",
+        )
+        result = await channel.handle(msg)
+        assert result is None
+
+    @pytest.mark.asyncio
+    async def test_handle_with_handler(self):
+        async def handler(message: Message) -> Optional[Reply]:
+            return Reply(type=MessageType.TEXT, content=f"收到: {message.content}")
+
+        channel = ConcreteChannel("test", message_handler=handler)
+        msg = Message(
+            type=MessageType.TEXT,
+            content="你好",
+            sender_id="user1",
+            sender_name="张三",
+            session_id="session1",
+        )
+        result = await channel.handle(msg)
+
+        assert result is not None
+        assert result.content == "收到: 你好"
+        assert msg.channel_name == "test"  # 自动填充通道名
+
+    @pytest.mark.asyncio
+    async def test_set_message_handler(self):
+        channel = ConcreteChannel("test")
+
+        async def handler(message: Message) -> Optional[Reply]:
+            return Reply(type=MessageType.TEXT, content="ok")
+
+        channel.set_message_handler(handler)
+
+        msg = Message(
+            type=MessageType.TEXT,
+            content="测试",
+            sender_id="user1",
+            sender_name="张三",
+            session_id="session1",
+        )
+        result = await channel.handle(msg)
+        assert result is not None
+        assert result.content == "ok"

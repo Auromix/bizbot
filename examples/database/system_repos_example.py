@@ -33,9 +33,8 @@ def demo_message_management(db: DatabaseManager):
     print("-" * 60)
 
     msg_data = {
-        "wechat_msg_id": "msg-001",
+        "msg_id": "msg-001",
         "sender_nickname": "前台",
-        "sender_wechat_id": "front_desk_001",
         "content": "张三 头疗 198元",
         "msg_type": "text",
         "group_id": "group-001",
@@ -77,7 +76,7 @@ def demo_message_management(db: DatabaseManager):
 
     # 模拟解析失败
     msg_id2 = db.save_raw_message({
-        "wechat_msg_id": "msg-002",
+        "msg_id": "msg-002",
         "sender_nickname": "前台",
         "content": "这是一条无法解析的消息",
         "timestamp": datetime.now(),

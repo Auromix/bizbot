@@ -32,15 +32,14 @@ def demo_staff_management(db: DatabaseManager):
     # 1. 创建员工（get_or_create - 幂等操作）
     print("\n1️⃣ 创建员工")
     print("-" * 60)
-    employee1 = db.staff.get_or_create("张三", "zhangsan_wechat")
+    employee1 = db.staff.get_or_create("张三")
     print(f"✅ 员工已创建/获取: {employee1.name} (ID: {employee1.id})")
-    print(f"   微信昵称: {employee1.wechat_nickname}")
 
-    employee2 = db.staff.get_or_create("李四", "lisi_wechat")
+    employee2 = db.staff.get_or_create("李四")
     print(f"✅ 员工已创建/获取: {employee2.name} (ID: {employee2.id})")
 
     # 再次创建相同员工（测试幂等性）
-    employee1_dup = db.staff.get_or_create("张三", "zhangsan_wechat")
+    employee1_dup = db.staff.get_or_create("张三")
     print(f"✅ 重复创建相同员工，返回已存在的记录: {employee1_dup.id == employee1.id}")
 
     # 2. 查询在职员工
@@ -49,7 +48,7 @@ def demo_staff_management(db: DatabaseManager):
     active_staff = db.staff.get_active_staff()
     print(f"✅ 在职员工数量: {len(active_staff)}")
     for emp in active_staff:
-        print(f"   - {emp.name} ({emp.wechat_nickname or 'N/A'}) - "
+        print(f"   - {emp.name} - "
               f"角色: {emp.role or 'N/A'} - 活跃: {emp.is_active}")
 
     # 3. 搜索员工
@@ -58,7 +57,7 @@ def demo_staff_management(db: DatabaseManager):
     search_results = db.staff.search("张")
     print(f"✅ 搜索包含'张'的员工: 找到 {len(search_results)} 人")
     for emp in search_results:
-        print(f"   - {emp.name} ({emp.wechat_nickname or 'N/A'})")
+        print(f"   - {emp.name}")
 
     # 4. 停用员工
     print("\n4️⃣ 停用员工")

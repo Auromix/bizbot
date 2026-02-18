@@ -71,7 +71,7 @@ def sample_date():
 def make_raw_message(db, suffix="default"):
     """Helper: create a raw message and return its ID."""
     return db.save_raw_message({
-        "wechat_msg_id": f"msg-{suffix}",
+        "msg_id": f"msg-{suffix}",
         "sender_nickname": "tester",
         "content": f"test content {suffix}",
         "timestamp": datetime(2024, 1, 28, 10, 0, 0),

@@ -143,6 +143,10 @@ class DatabaseManager:
         """
         return self.conn.execute_raw_sql(sql, params)
 
+    def close(self) -> None:
+        """关闭数据库连接，释放所有资源。"""
+        self.conn.close()
+
     # ================================================================
     # 便捷写入方法
     # ================================================================
@@ -271,7 +275,6 @@ class DatabaseManager:
             {
                 "id": e.id,
                 "name": e.name,
-                "wechat_nickname": e.wechat_nickname,
                 "role": e.role,
                 "commission_rate": (
                     float(e.commission_rate) if e.commission_rate else 0

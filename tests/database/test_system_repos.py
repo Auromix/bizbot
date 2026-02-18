@@ -23,7 +23,7 @@ class TestMessageRepository:
 
     def test_save_raw_message_basic(self, temp_db):
         msg_id = temp_db.messages.save_raw_message({
-            "wechat_msg_id": "wx-001",
+            "msg_id": "wx-001",
             "sender_nickname": "User1",
             "content": "Hello",
             "timestamp": datetime(2024, 1, 28, 10, 0, 0),
@@ -32,9 +32,8 @@ class TestMessageRepository:
 
     def test_save_raw_message_all_fields(self, temp_db):
         msg_id = temp_db.messages.save_raw_message({
-            "wechat_msg_id": "wx-full",
+            "msg_id": "wx-full",
             "sender_nickname": "FullUser",
-            "sender_wechat_id": "wx_id_001",
             "content": "Full message",
             "msg_type": "text",
             "group_id": "group-001",
@@ -46,15 +45,14 @@ class TestMessageRepository:
 
         with temp_db.get_session() as session:
             msg = session.query(RawMessage).filter_by(id=msg_id).first()
-            assert msg.sender_wechat_id == "wx_id_001"
             assert msg.group_id == "group-001"
             assert msg.is_at_bot is True
             assert msg.is_business is True
 
     def test_save_raw_message_dedup(self, temp_db):
-        """Duplicate wechat_msg_id should return the existing ID."""
+        """Duplicate msg_id should return the existing ID."""
         payload = {
-            "wechat_msg_id": "wx-dup",
+            "msg_id": "wx-dup",
             "sender_nickname": "user",
             "content": "hello",
             "timestamp": datetime(2024, 1, 28, 10, 0, 0),
@@ -63,8 +61,8 @@ class TestMessageRepository:
         second_id = temp_db.messages.save_raw_message(payload)
         assert first_id == second_id
 
-    def test_save_raw_message_without_wechat_id(self, temp_db):
-        """Message without wechat_msg_id should be saved (no dedup)."""
+    def test_save_raw_message_without_msg_id(self, temp_db):
+        """Message without msg_id should be saved (no dedup)."""
         msg_id = temp_db.messages.save_raw_message({
             "sender_nickname": "NoIDUser",
             "content": "No ID",
@@ -74,7 +72,7 @@ class TestMessageRepository:
 
     def test_save_raw_message_default_msg_type(self, temp_db):
         msg_id = temp_db.messages.save_raw_message({
-            "wechat_msg_id": "wx-defaults",
+            "msg_id": "wx-defaults",
             "sender_nickname": "user",
             "content": "test",
             "timestamp": datetime(2024, 1, 28, 10, 0, 0),

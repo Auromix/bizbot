@@ -29,7 +29,7 @@ from datetime import datetime
 
 # 1. 保存原始消息
 msg_id = db.save_raw_message({
-    "wechat_msg_id": "msg-001",
+    "msg_id": "msg-001",
     "sender_nickname": "前台",
     "content": "张三 头疗 198元",
     "timestamp": datetime.now()
@@ -76,7 +76,7 @@ db.create_tables()
 
 # === 1. 保存原始消息 ===
 msg_id = db.save_raw_message({
-    "wechat_msg_id": "quickstart-001",
+    "msg_id": "quickstart-001",
     "sender_nickname": "前台",
     "content": "张三 头疗 198元",
     "timestamp": datetime.now()
@@ -129,7 +129,7 @@ python quickstart_demo.py
 
 ```python
 # 创建员工
-employee = db.staff.get_or_create("张三", "zhangsan_wechat")
+employee = db.staff.get_or_create("张三")
 
 # 查询在职员工
 active_staff = db.staff.get_active_staff()

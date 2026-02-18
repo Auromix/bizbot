@@ -7,28 +7,22 @@ pydantic-settings>=2.0.0
 sqlalchemy>=2.0.0
 alembic>=1.12.0
 
-# LLM APIs
-openai>=1.0.0
+# LLM APIs (MiniMax 通过 anthropic SDK 兼容接口调用)
 anthropic>=0.18.0
+openai>=1.0.0  # OpenAI GPT Provider
 
-# WeChat Bridge (Linux only)
-# 企业微信 API 需要 requests
-requests>=2.31.0
-# HTTP API 服务器
+# Web 平台
 fastapi>=0.104.0
 uvicorn>=0.24.0
-# 消息加解密
-pycryptodome>=3.18.0
+
+# HTTP 客户端
+httpx>=0.24.0
 
 # Scheduler
 apscheduler>=3.10.0
 
-# Redis (optional, for caching)
-redis>=5.0.0
-
 # Utilities
 python-dateutil>=2.8.0
-httpx>=0.24.0  # For open source model provider
 
 # Logging
 loguru>=0.7.0
@@ -36,4 +30,3 @@ loguru>=0.7.0
 # Testing (optional)
 pytest>=7.4.0
 pytest-asyncio>=0.21.0
-

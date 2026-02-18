@@ -90,8 +90,7 @@ class ServiceRecordRepository(BaseCRUD):
             recorder = None
             if record_data.get("recorder_nickname"):
                 recorder = self._staff.get_or_create(
-                    name=record_data["recorder_nickname"],
-                    wechat_nickname=record_data["recorder_nickname"],
+                    record_data["recorder_nickname"],
                     session=session
                 )
 
@@ -284,8 +283,7 @@ class ProductSaleRepository(BaseCRUD):
             recorder = None
             if sale_data.get("recorder_nickname"):
                 recorder = self._staff.get_or_create(
-                    name=sale_data["recorder_nickname"],
-                    wechat_nickname=sale_data["recorder_nickname"],
+                    sale_data["recorder_nickname"],
                     session=session
                 )
 

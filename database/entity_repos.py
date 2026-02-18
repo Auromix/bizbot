@@ -30,30 +30,22 @@ class StaffRepository(BaseCRUD):
         super().__init__(conn)
 
     def get_or_create(self, name: str,
-                      wechat_nickname: Optional[str] = None,
                       session: Optional[Session] = None) -> Employee:
-        """获取或创建员工（按姓名或微信昵称匹配）。
+        """获取或创建员工（按姓名匹配）。
 
         Args:
             name: 员工姓名。
-            wechat_nickname: 微信昵称（可选）。
             session: 外部会话（可选）。
 
         Returns:
             Employee 对象。
         """
         def _do(sess):
-            # 构建匹配条件：始终按姓名匹配，仅当 wechat_nickname 非 None 时才按昵称匹配
-            conditions = [Employee.name == name]
-            if wechat_nickname is not None:
-                conditions.append(Employee.wechat_nickname == wechat_nickname)
             employee = sess.query(Employee).filter(
-                or_(*conditions)
+                Employee.name == name
             ).first()
             if not employee:
-                employee = Employee(
-                    name=name, wechat_nickname=wechat_nickname
-                )
+                employee = Employee(name=name)
                 sess.add(employee)
                 sess.flush()
                 sess.refresh(employee)
@@ -98,7 +90,7 @@ class StaffRepository(BaseCRUD):
 
     def search(self, keyword: str,
                session: Optional[Session] = None) -> List[Employee]:
-        """按姓名或微信昵称搜索员工。
+        """按姓名搜索员工。
 
         Args:
             keyword: 搜索关键词。
@@ -108,10 +100,7 @@ class StaffRepository(BaseCRUD):
         """
         def _query(sess):
             return sess.query(Employee).filter(
-                or_(
-                    Employee.name.contains(keyword),
-                    Employee.wechat_nickname.contains(keyword)
-                )
+                Employee.name.contains(keyword)
             ).all()
 
         if session:

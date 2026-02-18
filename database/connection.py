@@ -110,3 +110,11 @@ class DatabaseConnection:
             session.commit()
             return result
 
+    def close(self) -> None:
+        """关闭数据库连接，释放引擎资源。
+
+        释放连接池中的所有连接。调用后不应再使用此连接实例。
+        """
+        if self.engine is not None:
+            self.engine.dispose()
+

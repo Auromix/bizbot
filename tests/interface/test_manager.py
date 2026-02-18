@@ -1,241 +1,210 @@
-"""测试接口管理器"""
+"""测试通道管理器"""
 import pytest
-from unittest.mock import Mock, MagicMock
+from typing import Optional
 
-from interface.manager import InterfaceManager
-from interface.base import Interface
+from interface.base import Channel, Message, MessageType, Reply
+from interface.manager import ChannelManager
 
 
-class MockInterface(Interface):
-    """Mock 接口实现"""
-    
-    def __init__(self, name: str):
-        super().__init__(name)
-        self.start_called = False
-        self.stop_called = False
-    
-    def start(self):
-        """启动接口"""
-        self.start_called = True
+class MockChannel(Channel):
+    """Mock 通道实现"""
+
+    def __init__(self, name: str, message_handler=None):
+        super().__init__(name, message_handler)
+        self.startup_called = False
+        self.shutdown_called = False
+
+    async def startup(self):
+        self.startup_called = True
         self.running = True
-    
-    def stop(self):
-        """停止接口"""
-        self.stop_called = True
+
+    async def shutdown(self):
+        self.shutdown_called = True
         self.running = False
-    
-    async def handle_message(self, raw_msg):
-        """处理消息"""
-        return None
-    
-    def send_message(self, target: str, content: str):
-        """发送消息"""
+
+    async def send(self, session_id: str, reply: Reply):
         pass
 
 
-class TestInterfaceManager:
-    """接口管理器测试"""
-    
-    def test_init(self):
-        """测试初始化"""
-        manager = InterfaceManager()
-        assert manager.interfaces == {}
-    
-    def test_register(self):
-        """测试注册接口"""
-        manager = InterfaceManager()
-        interface = MockInterface("test")
-        
-        manager.register(interface)
-        
-        assert "test" in manager.interfaces
-        assert manager.interfaces["test"] == interface
-    
-    def test_register_duplicate(self):
-        """测试重复注册接口"""
-        manager = InterfaceManager()
-        interface1 = MockInterface("test")
-        interface2 = MockInterface("test")
-        
-        manager.register(interface1)
-        manager.register(interface2)
-        
-        assert manager.interfaces["test"] == interface2
-    
-    def test_unregister(self):
-        """测试注销接口"""
-        manager = InterfaceManager()
-        interface = MockInterface("test")
-        interface.running = True
-        
-        manager.register(interface)
-        manager.unregister("test")
-        
-        assert "test" not in manager.interfaces
-        assert interface.stop_called
-    
-    def test_unregister_not_running(self):
-        """测试注销未运行的接口"""
-        manager = InterfaceManager()
-        interface = MockInterface("test")
-        interface.running = False
-        
-        manager.register(interface)
-        manager.unregister("test")
-        
-        assert "test" not in manager.interfaces
-        assert not interface.stop_called
-    
-    def test_get_interface(self):
-        """测试获取接口"""
-        manager = InterfaceManager()
-        interface = MockInterface("test")
-        
-        manager.register(interface)
-        result = manager.get_interface("test")
-        
-        assert result == interface
-    
-    def test_get_interface_not_found(self):
-        """测试获取不存在的接口"""
-        manager = InterfaceManager()
-        result = manager.get_interface("nonexistent")
-        
-        assert result is None
-    
-    def test_start_all(self):
-        """测试启动所有接口"""
-        manager = InterfaceManager()
-        interface1 = MockInterface("test1")
-        interface2 = MockInterface("test2")
-        
-        manager.register(interface1)
-        manager.register(interface2)
-        manager.start_all()
-        
-        assert interface1.start_called
-        assert interface2.start_called
-        assert interface1.is_running()
-        assert interface2.is_running()
-    
-    def test_start_all_with_exception(self):
-        """测试启动所有接口时出现异常"""
-        manager = InterfaceManager()
-        interface1 = MockInterface("test1")
-        interface2 = MockInterface("test2")
-        
-        # 让 interface2 启动时抛出异常
-        def failing_start():
-            raise Exception("Start failed")
-        
-        interface2.start = failing_start
-        
-        manager.register(interface1)
-        manager.register(interface2)
-        manager.start_all()
-        
-        # interface1 应该成功启动
-        assert interface1.start_called
-        assert interface1.is_running()
-    
-    def test_stop_all(self):
-        """测试停止所有接口"""
-        manager = InterfaceManager()
-        interface1 = MockInterface("test1")
-        interface2 = MockInterface("test2")
-        
-        interface1.running = True
-        interface2.running = True
-        
-        manager.register(interface1)
-        manager.register(interface2)
-        manager.stop_all()
-        
-        assert interface1.stop_called
-        assert interface2.stop_called
-        assert not interface1.is_running()
-        assert not interface2.is_running()
-    
-    def test_stop_all_not_running(self):
-        """测试停止未运行的接口"""
-        manager = InterfaceManager()
-        interface1 = MockInterface("test1")
-        interface2 = MockInterface("test2")
-        
-        interface1.running = False
-        interface2.running = True
-        
-        manager.register(interface1)
-        manager.register(interface2)
-        manager.stop_all()
-        
-        assert not interface1.stop_called
-        assert interface2.stop_called
-    
-    def test_start(self):
-        """测试启动指定接口"""
-        manager = InterfaceManager()
-        interface = MockInterface("test")
-        
-        manager.register(interface)
-        manager.start("test")
-        
-        assert interface.start_called
-        assert interface.is_running()
-    
-    def test_start_not_found(self):
-        """测试启动不存在的接口"""
-        manager = InterfaceManager()
-        # 不应该抛出异常
-        manager.start("nonexistent")
-    
-    def test_stop(self):
-        """测试停止指定接口"""
-        manager = InterfaceManager()
-        interface = MockInterface("test")
-        interface.running = True
-        
-        manager.register(interface)
-        manager.stop("test")
-        
-        assert interface.stop_called
-        assert not interface.is_running()
-    
-    def test_stop_not_found(self):
-        """测试停止不存在的接口"""
-        manager = InterfaceManager()
-        # 不应该抛出异常
-        manager.stop("nonexistent")
-    
-    def test_list_interfaces(self):
-        """测试列出所有接口"""
-        manager = InterfaceManager()
-        interface1 = MockInterface("test1")
-        interface2 = MockInterface("test2")
-        
-        manager.register(interface1)
-        manager.register(interface2)
-        
-        interfaces = manager.list_interfaces()
-        
-        assert set(interfaces) == {"test1", "test2"}
-    
-    def test_get_running_interfaces(self):
-        """测试获取正在运行的接口"""
-        manager = InterfaceManager()
-        interface1 = MockInterface("test1")
-        interface2 = MockInterface("test2")
-        interface3 = MockInterface("test3")
-        
-        interface1.running = True
-        interface2.running = False
-        interface3.running = True
-        
-        manager.register(interface1)
-        manager.register(interface2)
-        manager.register(interface3)
-        
-        running = manager.get_running_interfaces()
-        
-        assert set(running) == {"test1", "test3"}
+class TestChannelManager:
+    """通道管理器测试"""
 
+    def test_init(self):
+        manager = ChannelManager()
+        assert manager.channels == {}
+
+    def test_register(self):
+        manager = ChannelManager()
+        channel = MockChannel("test")
+
+        manager.register(channel)
+
+        assert "test" in manager.channels
+        assert manager.channels["test"] == channel
+
+    def test_register_duplicate(self):
+        manager = ChannelManager()
+        channel1 = MockChannel("test")
+        channel2 = MockChannel("test")
+
+        manager.register(channel1)
+        manager.register(channel2)
+
+        assert manager.channels["test"] == channel2
+
+    def test_register_with_global_handler(self):
+        async def handler(msg):
+            return None
+
+        manager = ChannelManager(message_handler=handler)
+        channel = MockChannel("test")
+
+        manager.register(channel)
+
+        assert channel._message_handler == handler
+
+    def test_get_channel(self):
+        manager = ChannelManager()
+        channel = MockChannel("test")
+
+        manager.register(channel)
+        result = manager.get_channel("test")
+
+        assert result == channel
+
+    def test_get_channel_not_found(self):
+        manager = ChannelManager()
+        result = manager.get_channel("nonexistent")
+
+        assert result is None
+
+    @pytest.mark.asyncio
+    async def test_start_all(self):
+        manager = ChannelManager()
+        channel1 = MockChannel("test1")
+        channel2 = MockChannel("test2")
+
+        manager.register(channel1)
+        manager.register(channel2)
+        await manager.start_all()
+
+        assert channel1.startup_called
+        assert channel2.startup_called
+        assert channel1.is_running
+        assert channel2.is_running
+
+    @pytest.mark.asyncio
+    async def test_start_all_with_exception(self):
+        manager = ChannelManager()
+        channel1 = MockChannel("test1")
+        channel2 = MockChannel("test2")
+
+        async def failing_startup():
+            raise Exception("Startup failed")
+
+        channel2.startup = failing_startup
+
+        manager.register(channel1)
+        manager.register(channel2)
+        await manager.start_all()
+
+        # channel1 应该成功启动
+        assert channel1.startup_called
+        assert channel1.is_running
+
+    @pytest.mark.asyncio
+    async def test_stop_all(self):
+        manager = ChannelManager()
+        channel1 = MockChannel("test1")
+        channel2 = MockChannel("test2")
+
+        channel1.running = True
+        channel2.running = True
+
+        manager.register(channel1)
+        manager.register(channel2)
+        await manager.stop_all()
+
+        assert channel1.shutdown_called
+        assert channel2.shutdown_called
+        assert not channel1.is_running
+        assert not channel2.is_running
+
+    @pytest.mark.asyncio
+    async def test_stop_all_not_running(self):
+        manager = ChannelManager()
+        channel1 = MockChannel("test1")
+        channel2 = MockChannel("test2")
+
+        channel1.running = False
+        channel2.running = True
+
+        manager.register(channel1)
+        manager.register(channel2)
+        await manager.stop_all()
+
+        assert not channel1.shutdown_called
+        assert channel2.shutdown_called
+
+    @pytest.mark.asyncio
+    async def test_start_specific(self):
+        manager = ChannelManager()
+        channel = MockChannel("test")
+
+        manager.register(channel)
+        await manager.start("test")
+
+        assert channel.startup_called
+        assert channel.is_running
+
+    @pytest.mark.asyncio
+    async def test_start_not_found(self):
+        manager = ChannelManager()
+        # 不应该抛出异常
+        await manager.start("nonexistent")
+
+    @pytest.mark.asyncio
+    async def test_stop_specific(self):
+        manager = ChannelManager()
+        channel = MockChannel("test")
+        channel.running = True
+
+        manager.register(channel)
+        await manager.stop("test")
+
+        assert channel.shutdown_called
+        assert not channel.is_running
+
+    @pytest.mark.asyncio
+    async def test_stop_not_found(self):
+        manager = ChannelManager()
+        # 不应该抛出异常
+        await manager.stop("nonexistent")
+
+    def test_list_channels(self):
+        manager = ChannelManager()
+        channel1 = MockChannel("test1")
+        channel2 = MockChannel("test2")
+
+        manager.register(channel1)
+        manager.register(channel2)
+
+        channels = manager.list_channels()
+        assert set(channels) == {"test1", "test2"}
+
+    def test_get_running_channels(self):
+        manager = ChannelManager()
+        channel1 = MockChannel("test1")
+        channel2 = MockChannel("test2")
+        channel3 = MockChannel("test3")
+
+        channel1.running = True
+        channel2.running = False
+        channel3.running = True
+
+        manager.register(channel1)
+        manager.register(channel2)
+        manager.register(channel3)
+
+        running = manager.get_running_channels()
+        assert set(running) == {"test1", "test3"}

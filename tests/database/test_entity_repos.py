@@ -21,10 +21,9 @@ class TestStaffRepository:
 
     def test_get_or_create_new_staff(self, temp_db):
         """Creating a new staff member."""
-        emp = temp_db.staff.get_or_create("Tony", "tony_wechat")
+        emp = temp_db.staff.get_or_create("Tony")
         assert emp is not None
         assert emp.name == "Tony"
-        assert emp.wechat_nickname == "tony_wechat"
         assert emp.id > 0
 
     def test_get_or_create_existing_by_name(self, temp_db):
@@ -33,11 +32,6 @@ class TestStaffRepository:
         emp2 = temp_db.staff.get_or_create("Tony")
         assert emp1.id == emp2.id
 
-    def test_get_or_create_existing_by_wechat_nickname(self, temp_db):
-        """get_or_create matches by wechat_nickname as well."""
-        emp1 = temp_db.staff.get_or_create("Tony", "tony_wx")
-        emp2 = temp_db.staff.get_or_create("DifferentName", "tony_wx")
-        assert emp1.id == emp2.id
 
     def test_get_or_create_with_session(self, temp_db):
         with temp_db.get_session() as session:
@@ -67,16 +61,11 @@ class TestStaffRepository:
         assert result is None
 
     def test_search_by_name(self, temp_db):
-        temp_db.staff.get_or_create("Alice Stylist", "alice_wx")
-        temp_db.staff.get_or_create("Bob Manager", "bob_wx")
+        temp_db.staff.get_or_create("Alice Stylist")
+        temp_db.staff.get_or_create("Bob Manager")
         results = temp_db.staff.search("Alice")
         assert len(results) == 1
         assert results[0].name == "Alice Stylist"
-
-    def test_search_by_wechat_nickname(self, temp_db):
-        temp_db.staff.get_or_create("Hidden", "special_nick")
-        results = temp_db.staff.search("special_nick")
-        assert len(results) == 1
 
     def test_search_no_match(self, temp_db):
         results = temp_db.staff.search("NoSuchPerson")

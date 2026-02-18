@@ -18,7 +18,7 @@ from .models import (
 class MessageRepository(BaseCRUD):
     """原始消息与修正记录 仓库。
 
-    管理从微信群聊接收到的原始消息，以及对业务记录的修正操作。
+    管理接收到的原始消息，以及对业务记录的修正操作。
     支持消息去重和解析状态跟踪。
     """
 
@@ -30,9 +30,8 @@ class MessageRepository(BaseCRUD):
 
         Args:
             msg_data: 消息数据字典，支持以下键：
-                - wechat_msg_id: 微信消息ID（用于去重）
+                - msg_id: 消息ID（用于去重，可选）
                 - sender_nickname: 发送者昵称（必填）
-                - sender_wechat_id: 发送者微信ID（可选）
                 - content: 消息内容（必填）
                 - msg_type: 消息类型（可选，默认"text"）
                 - group_id: 群组ID（可选）
@@ -45,17 +44,19 @@ class MessageRepository(BaseCRUD):
             消息记录ID（新建或已存在的）。
         """
         with self._get_session() as session:
-            # 去重检查
-            existing = session.query(RawMessage).filter(
-                RawMessage.wechat_msg_id == msg_data.get("wechat_msg_id")
-            ).first()
+            # 去重检查（如果提供了msg_id）
+            msg_id = msg_data.get("msg_id")
+            existing = None
+            if msg_id:
+                existing = session.query(RawMessage).filter(
+                    RawMessage.msg_id == msg_id
+                ).first()
             if existing:
                 return existing.id
 
             msg = RawMessage(
-                wechat_msg_id=msg_data.get("wechat_msg_id"),
+                msg_id=msg_id,
                 sender_nickname=msg_data.get("sender_nickname"),
-                sender_wechat_id=msg_data.get("sender_wechat_id"),
                 content=msg_data.get("content"),
                 msg_type=msg_data.get("msg_type", "text"),
                 group_id=msg_data.get("group_id"),

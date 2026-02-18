@@ -282,7 +282,7 @@ async def example_database_integration():
     
     # 先创建一些测试数据
     msg_id = db.save_raw_message({
-        "wechat_msg_id": "test-001",
+        "msg_id": "test-001",
         "sender_nickname": "测试",
         "content": "张三 头疗 198元",
         "timestamp": "2024-01-28 10:00:00",

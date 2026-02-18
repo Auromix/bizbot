@@ -38,8 +38,6 @@ class TestEmployeeModel:
         with temp_db.get_session() as session:
             emp = Employee(
                 name="Tony",
-                wechat_nickname="tony_wechat",
-                wechat_alias="tony_alias",
                 role="manager",
                 commission_rate=15.5,
                 is_active=True,
@@ -47,9 +45,6 @@ class TestEmployeeModel:
             )
             session.add(emp)
             session.commit()
-
-            assert emp.wechat_nickname == "tony_wechat"
-            assert emp.wechat_alias == "tony_alias"
             assert emp.role == "manager"
             assert float(emp.commission_rate) == 15.5
             assert emp.extra_data["level"] == "senior"
@@ -331,7 +326,7 @@ class TestRawMessageModel:
     def test_create_raw_message(self, temp_db):
         with temp_db.get_session() as session:
             msg = RawMessage(
-                wechat_msg_id="wx-001",
+                msg_id="wx-001",
                 sender_nickname="User1",
                 content="Hello",
                 timestamp=datetime(2024, 1, 28, 10, 0, 0),
@@ -344,11 +339,11 @@ class TestRawMessageModel:
             assert msg.msg_type == "text"
             assert msg.is_at_bot is False
 
-    def test_raw_message_unique_wechat_msg_id(self, temp_db):
-        """wechat_msg_id should be unique."""
+    def test_raw_message_unique_msg_id(self, temp_db):
+        """msg_id should be unique."""
         with temp_db.get_session() as session:
             msg1 = RawMessage(
-                wechat_msg_id="wx-dup",
+                msg_id="wx-dup",
                 sender_nickname="U1",
                 content="C1",
                 timestamp=datetime(2024, 1, 1),
@@ -358,7 +353,7 @@ class TestRawMessageModel:
 
         with temp_db.get_session() as session:
             msg2 = RawMessage(
-                wechat_msg_id="wx-dup",
+                msg_id="wx-dup",
                 sender_nickname="U2",
                 content="C2",
                 timestamp=datetime(2024, 1, 2),

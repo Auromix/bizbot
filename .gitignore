@@ -20,8 +20,8 @@ dist/
 .env.local
 .env.*.local
 
-# Configuration files with sensitive data
-config.ini
+# 不要忽略 .env.example（它是配置模板）
+!.env.example
 
 # Database
 *.db

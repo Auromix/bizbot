@@ -25,7 +25,7 @@ class TestHairSalonScenario:
 
         # Save raw message
         msg_id = temp_db.save_raw_message({
-            "wechat_msg_id": "hair-daily-1",
+            "msg_id": "hair-daily-1",
             "sender_nickname": "assistant",
             "content": "Alice haircut 80",
             "timestamp": datetime(2024, 1, 28, 10, 0, 0),
@@ -60,7 +60,7 @@ class TestHairSalonScenario:
     def test_membership_and_summary(self, temp_db):
         """Membership creation + daily summary."""
         msg_id = temp_db.save_raw_message({
-            "wechat_msg_id": "hair-member-1",
+            "msg_id": "hair-member-1",
             "sender_nickname": "tony",
             "content": "Alice topup 1000",
             "timestamp": datetime(2024, 1, 1, 9, 0, 0),
@@ -247,7 +247,7 @@ class TestTherapyStoreScenario:
         """Full day: messages → parse → records → summary."""
         # Morning message
         msg1_id = temp_db.save_raw_message({
-            "wechat_msg_id": "therapy-1",
+            "msg_id": "therapy-1",
             "sender_nickname": "小助手",
             "content": "1.28段老师头疗30",
             "timestamp": datetime(2024, 1, 28, 10, 0, 0),
@@ -265,7 +265,7 @@ class TestTherapyStoreScenario:
 
         # Afternoon message with commission
         msg2_id = temp_db.save_raw_message({
-            "wechat_msg_id": "therapy-2",
+            "msg_id": "therapy-2",
             "sender_nickname": "小助手",
             "content": "1.28姚老师理疗198-20李哥178",
             "timestamp": datetime(2024, 1, 28, 14, 0, 0),
@@ -286,7 +286,7 @@ class TestTherapyStoreScenario:
 
         # Product sale
         msg3_id = temp_db.save_raw_message({
-            "wechat_msg_id": "therapy-3",
+            "msg_id": "therapy-3",
             "sender_nickname": "小助手",
             "content": "泡脚液销售",
             "timestamp": datetime(2024, 1, 28, 16, 0, 0),
@@ -376,7 +376,7 @@ class TestDataFlowIntegration:
         """Simulate the full pipeline: message → parse → record → summary."""
         # Step 1: Save raw message
         msg_id = temp_db.save_raw_message({
-            "wechat_msg_id": "pipeline-1",
+            "msg_id": "pipeline-1",
             "sender_nickname": "recorder",
             "content": "张三 头疗 30",
             "timestamp": datetime(2024, 1, 28, 10, 0, 0),

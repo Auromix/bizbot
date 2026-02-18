@@ -16,16 +16,6 @@ class BusinessConfig(ABC):
         pass
     
     @abstractmethod
-    def get_product_categories(self) -> List[str]:
-        """获取商品类别列表"""
-        pass
-    
-    @abstractmethod
-    def get_membership_card_types(self) -> List[str]:
-        """获取会员卡类型列表"""
-        pass
-    
-    @abstractmethod
     def get_llm_system_prompt(self) -> str:
         """获取 LLM 系统提示词"""
         pass
@@ -65,14 +55,8 @@ class TherapyStoreConfig(BusinessConfig):
             {"name": "拔罐", "default_price": 60.0, "category": "therapy"},
         ]
     
-    def get_product_categories(self) -> List[str]:
-        return ["supplement", "medicine", "accessory"]
-    
-    def get_membership_card_types(self) -> List[str]:
-        return ["理疗卡", "头疗卡", "泡脚卡", "通用卡"]
-    
     def get_llm_system_prompt(self) -> str:
-        return """你是一个健康理疗门店的数据录入助手。你的任务是从微信群聊消息中提取结构化业务数据。
+        return """你是一个健康理疗门店的数据录入助手。你的任务是从群聊消息中提取结构化业务数据。
 
 ## 门店业务类型
 1. 理疗服务：员工为顾客做按摩/头疗/泡脚等，收取费用
@@ -82,7 +66,7 @@ class TherapyStoreConfig(BusinessConfig):
 
 ## 已知人员
 - 顾客常以"X老师"称呼：段老师、姚老师、周老师、郑老师等
-- 员工/记录员：通过微信昵称识别
+- 员工/记录员：通过昵称识别
 - 提成人员：如"李哥"
 
 ## 消息格式特征
