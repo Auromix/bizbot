@@ -83,15 +83,16 @@ bizbot/
 ├── examples/              # Usage examples
 ├── tests/                 # Comprehensive test suite
 ├── app.py                 # Application entry point
-├── pyproject.toml         # Modern Python packaging
-└── requirements.txt       # Pinned dependencies
+├── environment.yml        # Conda environment definition
+├── pyproject.toml         # Python project & tool configuration
+└── requirements.txt       # Pip dependencies reference
 ```
 
 ## 🚀 Quick Start
 
 ### Prerequisites
 
-- **Python 3.10+**
+- **[Miniconda](https://docs.conda.io/en/latest/miniconda.html)** (推荐) 或 Python 3.10+
 - An LLM API key (MiniMax by default, or OpenAI / Anthropic)
 
 ### 1. Clone the repository
@@ -101,28 +102,14 @@ git clone https://github.com/Auromix/bizbot.git
 cd bizbot
 ```
 
-### 2. Create a virtual environment
+### 2. Create conda environment
 
 ```bash
-python -m venv .venv
-source .venv/bin/activate   # Linux / macOS
-# .venv\Scripts\activate    # Windows
+conda env create -f environment.yml
+conda activate bizbot
 ```
 
-### 3. Install dependencies
-
-```bash
-# Standard install
-pip install -e .
-
-# With web dashboard + scheduler
-pip install -e ".[all]"
-
-# For development (includes testing & linting tools)
-pip install -e ".[all,dev]"
-```
-
-### 4. Configure environment
+### 3. Configure environment
 
 Run the interactive setup wizard:
 
@@ -149,7 +136,7 @@ WEB_PASSWORD=admin123
 WEB_SECRET_KEY=change-me-to-a-random-secret-key
 ```
 
-### 5. Launch
+### 4. Launch
 
 ```bash
 python app.py
@@ -285,6 +272,191 @@ mypy agent/ database/
 # Lint
 flake8 agent/ database/ interface/ config/
 ```
+
+## ☁️ Ubuntu 云服务器部署（阿里云）
+
+本节说明如何在阿里云 ECS（Ubuntu 22.04）上部署 BizBot，并通过公网 IP 或域名从浏览器访问。
+
+### 前置条件
+
+- 阿里云 ECS，操作系统：Ubuntu 22.04 LTS（推荐）
+- 安全组已放行入方向端口：**8080**（或自定义端口）
+- 已获取 MiniMax API Key
+
+---
+
+### 第一步：安装 Miniconda
+
+```bash
+# 下载 Miniconda（Linux x86_64）
+wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh -O ~/miniconda.sh
+
+# 静默安装到 ~/miniconda3
+bash ~/miniconda.sh -b -p ~/miniconda3
+
+# 初始化 conda（写入 .bashrc）
+~/miniconda3/bin/conda init bash
+source ~/.bashrc
+
+# 验证
+conda --version
+```
+
+---
+
+### 第二步：克隆项目
+
+```bash
+git clone https://github.com/Auromix/bizbot.git
+cd bizbot
+```
+
+---
+
+### 第三步：创建并激活 conda 环境
+
+```bash
+conda env create -f environment.yml
+conda activate bizbot
+```
+
+---
+
+### 第四步：配置 `.env`
+
+**方式 A：交互式向导（推荐）**
+
+```bash
+python scripts/setup_env.py
+```
+
+**方式 B：手动创建**
+
+```bash
+cp .env.example .env
+nano .env
+```
+
+至少需要填写（**务必修改默认密码！**）：
+
+```ini
+MINIMAX_API_KEY=你的MiniMax_API_Key
+
+WEB_HOST=0.0.0.0
+WEB_PORT=8080
+WEB_USERNAME=admin
+WEB_PASSWORD=你的强密码
+WEB_SECRET_KEY=随机生成一个长字符串
+```
+
+---
+
+### 第五步：验证启动
+
+```bash
+conda activate bizbot
+python app.py
+```
+
+看到以下输出说明启动成功：
+
+```
+============================================================
+  🤖 BizBot — xxx is running!
+  URL:       http://localhost:8080
+  External:  http://YOUR_IP:8080
+  ...
+============================================================
+```
+
+此时即可通过 `http://服务器公网IP:8080` 从个人电脑访问。
+
+---
+
+### 第六步：阿里云安全组放行端口
+
+在 **阿里云控制台 → ECS → 安全组 → 入方向规则** 中添加：
+
+| 协议 | 端口范围 | 授权对象 |
+|------|----------|----------|
+| TCP  | 8080/8080 | 0.0.0.0/0 |
+
+---
+
+### 第七步（推荐）：配置 systemd 后台服务
+
+避免 SSH 断开后服务停止，将 BizBot 注册为系统服务：
+
+```bash
+sudo nano /etc/systemd/system/bizbot.service
+```
+
+写入以下内容（将 `YOUR_USER` 替换为你的实际用户名）：
+
+```ini
+[Unit]
+Description=BizBot AI Business Platform
+After=network.target
+
+[Service]
+Type=simple
+User=YOUR_USER
+WorkingDirectory=/home/YOUR_USER/bizbot
+ExecStart=/home/YOUR_USER/miniconda3/envs/bizbot/bin/python app.py
+Restart=on-failure
+RestartSec=5
+Environment=PATH=/home/YOUR_USER/miniconda3/envs/bizbot/bin
+
+[Install]
+WantedBy=multi-user.target
+```
+
+```bash
+# 启用并启动
+sudo systemctl daemon-reload
+sudo systemctl enable bizbot
+sudo systemctl start bizbot
+
+# 查看运行状态 / 实时日志
+sudo systemctl status bizbot
+sudo journalctl -u bizbot -f
+```
+
+---
+
+### （可选）绑定域名 + Nginx 反向代理
+
+如果已有域名，可通过 Nginx 将 80/443 端口代理到 8080，实现无端口号访问：
+
+```bash
+sudo apt install nginx -y
+sudo nano /etc/nginx/sites-available/bizbot
+```
+
+```nginx
+server {
+    listen 80;
+    server_name 你的域名;
+
+    location / {
+        proxy_pass http://127.0.0.1:8080;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection "upgrade";
+    }
+}
+```
+
+```bash
+sudo ln -s /etc/nginx/sites-available/bizbot /etc/nginx/sites-enabled/
+sudo nginx -t && sudo systemctl restart nginx
+```
+
+之后通过 `http://你的域名` 即可直接访问，无需输入端口号。
+
+---
 
 ## 🗺️ Roadmap
 
